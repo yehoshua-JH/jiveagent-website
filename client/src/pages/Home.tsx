@@ -6,13 +6,15 @@
  */
 
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { motion, useInView, useAnimation } from "framer-motion";
 import {
   Phone, Bot, Calendar, MessageSquare, ArrowRight, Check,
   Globe, Zap, Shield, Users, BarChart3, Headphones, Building2,
   Star, ChevronDown, Menu, X, Mic, Brain, PhoneCall,
   TrendingUp, Clock, Languages, Webhook, Database, Play,
-  ChevronRight, Sparkles, Building, UserCheck, LayoutDashboard
+  ChevronRight, Sparkles, Building, UserCheck, LayoutDashboard,
+  Pause, Volume2, VolumeX, Send, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -52,9 +54,10 @@ function Navbar() {
 
   const links = [
     { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
+    { label: "Live Demo", href: "#demo" },
     { label: "For Agencies", href: "#agencies" },
     { label: "Pricing", href: "#pricing" },
+    { label: "Book Demo", href: "#book-demo" },
   ];
 
   return (
@@ -510,6 +513,370 @@ function AgencySection() {
   );
 }
 
+// ─── Live Demo ────────────────────────────────────────────────────────────────
+const DEMO_CALLS = [
+  {
+    id: "dental",
+    label: "Dental Clinic",
+    description: "Patient calls to book a cleaning appointment",
+    duration: "1:24",
+    color: "from-blue-500 to-cyan-500",
+    waveColor: "#60a5fa",
+    transcript: [
+      { speaker: "Agent", text: "Thank you for calling Bright Smile Dental. This is Aria, how can I help you today?" },
+      { speaker: "Caller", text: "Hi, I'd like to book a cleaning appointment for next week if possible." },
+      { speaker: "Agent", text: "Of course! I can help with that. Could I get your name and date of birth to pull up your file?" },
+      { speaker: "Caller", text: "Sure, it's Michael Torres, born March 15th, 1988." },
+      { speaker: "Agent", text: "Perfect, Michael. I have Tuesday at 10am or Thursday at 2pm available next week. Which works better for you?" },
+      { speaker: "Caller", text: "Thursday at 2pm sounds great." },
+      { speaker: "Agent", text: "Wonderful! I've booked you in for Thursday at 2pm. You'll receive a confirmation text shortly. Is there anything else I can help you with?" },
+    ],
+  },
+  {
+    id: "realestate",
+    label: "Real Estate",
+    description: "Lead calls about a property listing after hours",
+    duration: "1:52",
+    color: "from-violet-500 to-purple-600",
+    waveColor: "#a78bfa",
+    transcript: [
+      { speaker: "Agent", text: "Hello, thanks for calling Premier Realty. I'm Alex, your AI assistant. How can I help you tonight?" },
+      { speaker: "Caller", text: "Yeah hi, I saw a listing on Zillow for 42 Maple Drive. Is it still available?" },
+      { speaker: "Agent", text: "Great choice! 42 Maple Drive is a 4-bed, 2-bath home listed at $485,000 and it is still available. Are you pre-approved for financing?" },
+      { speaker: "Caller", text: "Yes, we're pre-approved up to $500k. Can we schedule a viewing?" },
+      { speaker: "Agent", text: "Absolutely. I can schedule a showing for this Saturday at 11am or Sunday at 3pm. Which works for you?" },
+      { speaker: "Caller", text: "Saturday at 11 works perfectly." },
+      { speaker: "Agent", text: "Done! I've booked Saturday at 11am. Your agent Sarah will meet you there. I'll send a confirmation to your number now." },
+    ],
+  },
+  {
+    id: "restaurant",
+    label: "Restaurant",
+    description: "Customer calls to place a takeout order",
+    duration: "2:05",
+    color: "from-orange-500 to-red-500",
+    waveColor: "#fb923c",
+    transcript: [
+      { speaker: "Agent", text: "Welcome to Bella Cucina! I'm Mia. Are you calling to place an order or make a reservation?" },
+      { speaker: "Caller", text: "I'd like to order takeout please." },
+      { speaker: "Agent", text: "Perfect! What can I get started for you today?" },
+      { speaker: "Caller", text: "I'll take two margherita pizzas and a Caesar salad. What's the wait time?" },
+      { speaker: "Agent", text: "Great choices! Two margherita pizzas and a Caesar salad comes to $42.50. Current wait is about 25 minutes. Can I get your name and phone number?" },
+      { speaker: "Caller", text: "It's Lisa Chen, 555-0192." },
+      { speaker: "Agent", text: "Got it, Lisa. Your order is confirmed and will be ready in 25 minutes. We'll text you when it's ready for pickup!" },
+    ],
+  },
+];
+
+function LiveDemo() {
+  const [activeDemo, setActiveDemo] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [visibleLines, setVisibleLines] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const demo = DEMO_CALLS[activeDemo];
+
+  const stopPlayback = () => {
+    setPlaying(false);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  const startPlayback = () => {
+    setPlaying(true);
+    setProgress(0);
+    setVisibleLines(0);
+    const totalLines = demo.transcript.length;
+    let line = 0;
+    let prog = 0;
+    intervalRef.current = setInterval(() => {
+      prog += 1;
+      setProgress(prog);
+      if (prog % Math.floor(100 / totalLines) === 0 && line < totalLines) {
+        line++;
+        setVisibleLines(line);
+      }
+      if (prog >= 100) {
+        clearInterval(intervalRef.current!);
+        setPlaying(false);
+        setVisibleLines(totalLines);
+      }
+    }, 80);
+  };
+
+  const togglePlay = () => {
+    if (playing) stopPlayback();
+    else startPlayback();
+  };
+
+  useEffect(() => {
+    stopPlayback();
+    setProgress(0);
+    setVisibleLines(0);
+  }, [activeDemo]);
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
+
+  return (
+    <section id="demo" className="py-24 bg-[#080d1f] relative overflow-hidden">
+      <div className="absolute inset-0 radial-glow opacity-30" />
+      <div className="container relative z-10">
+        <FadeUp className="text-center mb-16">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 mb-4">
+            Live Demo
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'Sora, sans-serif' }}>
+            Hear it in action
+          </h2>
+          <p className="text-white/50 text-lg max-w-xl mx-auto">
+            Real conversations handled by JiveAgents across different industries.
+          </p>
+        </FadeUp>
+
+        <div className="max-w-4xl mx-auto">
+          {/* Demo selector tabs */}
+          <FadeUp className="flex flex-wrap gap-3 justify-center mb-8">
+            {DEMO_CALLS.map((d, i) => (
+              <button
+                key={d.id}
+                onClick={() => setActiveDemo(i)}
+                className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  activeDemo === i
+                    ? `bg-gradient-to-r ${d.color} text-white shadow-lg`
+                    : "glass-card text-white/60 hover:text-white"
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </FadeUp>
+
+          <FadeUp>
+            <div className="glass-card rounded-2xl overflow-hidden">
+              {/* Player header */}
+              <div className={`bg-gradient-to-r ${demo.color} p-6 flex items-center justify-between`}>
+                <div>
+                  <div className="text-white font-bold text-lg" style={{ fontFamily: 'Sora, sans-serif' }}>{demo.label} Agent</div>
+                  <div className="text-white/70 text-sm mt-0.5">{demo.description}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-white/70 text-sm">{demo.duration}</span>
+                  <button
+                    onClick={togglePlay}
+                    className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all backdrop-blur-sm"
+                  >
+                    {playing
+                      ? <Pause className="w-5 h-5 text-white" />
+                      : <Play className="w-5 h-5 text-white fill-current" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-1 bg-white/10">
+                <motion.div
+                  className={`h-full bg-gradient-to-r ${demo.color}`}
+                  style={{ width: `${progress}%` }}
+                  transition={{ duration: 0.1 }}
+                />
+              </div>
+
+              {/* Transcript */}
+              <div className="p-6 space-y-4 min-h-[280px]">
+                {demo.transcript.slice(0, playing || visibleLines > 0 ? visibleLines : demo.transcript.length).map((line, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: line.speaker === "Agent" ? -16 : 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className={`flex gap-3 ${ line.speaker === "Caller" ? "flex-row-reverse" : "" }`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${
+                      line.speaker === "Agent"
+                        ? `bg-gradient-to-br ${demo.color} text-white`
+                        : "bg-white/10 text-white/60"
+                    }`}>
+                      {line.speaker === "Agent" ? "AI" : "C"}
+                    </div>
+                    <div className={`max-w-[75%] px-4 py-2.5 rounded-xl text-sm leading-relaxed ${
+                      line.speaker === "Agent"
+                        ? "bg-white/8 text-white/80"
+                        : "bg-white/5 text-white/60"
+                    }`}>
+                      {line.text}
+                    </div>
+                  </motion.div>
+                ))}
+                {!playing && visibleLines === 0 && (
+                  <div className="flex items-center justify-center h-40 text-white/30 text-sm">
+                    Press play to see the conversation unfold
+                  </div>
+                )}
+              </div>
+
+              {/* Footer note */}
+              <div className="px-6 pb-5 text-xs text-white/30 text-center">
+                * Simulated transcript — actual voice quality depends on your chosen TTS provider
+              </div>
+            </div>
+          </FadeUp>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Book a Demo Form ──────────────────────────────────────────────────────────
+function BookDemo() {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", business: "", type: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.business) {
+      toast.error("Please fill in your name, email, and business name.");
+      return;
+    }
+    setSubmitting(true);
+    // Simulate form submission (replace with actual endpoint)
+    await new Promise(r => setTimeout(r, 1500));
+    setSubmitting(false);
+    setSubmitted(true);
+    toast.success("Demo request sent! We'll be in touch within 24 hours.");
+  };
+
+  return (
+    <section id="book-demo" className="py-24 bg-[#050818] relative overflow-hidden">
+      <div className="absolute inset-0 radial-glow opacity-40" />
+      <div className="container relative z-10">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left — copy */}
+          <FadeUp>
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 mb-6">
+              Book a Demo
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" style={{ fontFamily: 'Sora, sans-serif' }}>
+              See JiveAgents<br />built for your business
+            </h2>
+            <p className="text-white/55 text-lg leading-relaxed mb-8">
+              Get a personalized walkthrough with our team. We'll show you how to deploy your first agent, configure it for your industry, and go live in under 10 minutes.
+            </p>
+            <ul className="space-y-3">
+              {[
+                "Live demo tailored to your industry",
+                "Reseller & white-label pricing discussed",
+                "No commitment — just a conversation",
+                "Response within 24 hours",
+              ].map(item => (
+                <li key={item} className="flex items-center gap-3 text-sm text-white/70">
+                  <div className="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 text-violet-400" />
+                  </div>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </FadeUp>
+
+          {/* Right — form */}
+          <FadeUp delay={0.15}>
+            <div className="glass-card rounded-2xl p-8">
+              {submitted ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-8"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center mx-auto mb-6">
+                    <Check className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3" style={{ fontFamily: 'Sora, sans-serif' }}>Request received!</h3>
+                  <p className="text-white/55 leading-relaxed">
+                    Thanks, {form.name.split(" ")[0]}! Our team will reach out to {form.email} within 24 hours to schedule your demo.
+                  </p>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Full Name *</label>
+                      <input
+                        name="name" value={form.name} onChange={handleChange}
+                        placeholder="Jane Smith"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Work Email *</label>
+                      <input
+                        name="email" type="email" value={form.email} onChange={handleChange}
+                        placeholder="jane@company.com"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Business Name *</label>
+                      <input
+                        name="business" value={form.business} onChange={handleChange}
+                        placeholder="Acme Corp"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Phone</label>
+                      <input
+                        name="phone" type="tel" value={form.phone} onChange={handleChange}
+                        placeholder="+1 (555) 000-0000"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">I am a…</label>
+                    <select
+                      name="type" value={form.type} onChange={handleChange}
+                      className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-violet-500/50 transition-all appearance-none"
+                    >
+                      <option value="" className="bg-[#0a0f2a]">Select one</option>
+                      <option value="business" className="bg-[#0a0f2a]">Business owner / end user</option>
+                      <option value="agency" className="bg-[#0a0f2a]">Agency / reseller</option>
+                      <option value="enterprise" className="bg-[#0a0f2a]">Enterprise</option>
+                      <option value="other" className="bg-[#0a0f2a]">Just exploring</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">Tell us about your use case</label>
+                    <textarea
+                      name="message" value={form.message} onChange={handleChange}
+                      placeholder="e.g. We run a dental clinic and want to automate appointment booking..."
+                      rows={3}
+                      className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all resize-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full btn-glow inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold text-sm disabled:opacity-60 transition-all"
+                  >
+                    {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</> : <><Send className="w-4 h-4" /> Book My Demo</>}
+                  </button>
+                  <p className="text-center text-xs text-white/25">No spam. Unsubscribe anytime.</p>
+                </form>
+              )}
+            </div>
+          </FadeUp>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Pricing ───────────────────────────────────────────────────────────────────
 const PLANS = [
   {
@@ -786,7 +1153,9 @@ export default function Home() {
       <UseCases />
       <AgencySection />
       <Pricing />
+      <LiveDemo />
       <Testimonials />
+      <BookDemo />
       <CTABanner />
       <Footer />
     </div>
